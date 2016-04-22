@@ -61,9 +61,8 @@ public class FlumeRFC1918Interceptor implements
 			return null;
 		}
 		
-	    
-	    int medium = (int)datum.get("medium");
-	    if (medium == 32)
+	    Object medium = datum.get("medium");
+	    if (medium != null && (int)medium == 32)
 	    {
 	    	return event;
 	    }
