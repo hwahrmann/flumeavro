@@ -61,6 +61,13 @@ public class FlumeRFC1918Interceptor implements
 			return null;
 		}
 		
+	    
+	    int medium = (int)datum.get("medium");
+	    if (medium == 32)
+	    {
+	    	return event;
+	    }
+	    
 	    String ipSrc = null;
 	    String ipDst = null;
 	    
@@ -110,7 +117,7 @@ public class FlumeRFC1918Interceptor implements
 		
 		if (removedEvents > 0)
 		{
-			logger.info("Dropped Events because of RFC1918 addresses: " + removedEvents);
+			logger.info("Dropped Events because of RFC1918 addresses: " + removedEvents + " out of " + events.size());
 		}
 		
         return events;
