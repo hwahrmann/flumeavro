@@ -1,6 +1,6 @@
 package com.rsa.flume.serialization;
 
-import java.io.IOException;
+import java.io.EOFException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Iterator;
@@ -36,7 +36,6 @@ public class FlumeRFC1918Interceptor implements
 	@Override
 	public void close() {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -57,8 +56,14 @@ public class FlumeRFC1918Interceptor implements
 	    GenericRecord datum = new GenericData.Record(schema);
 	    try {
 			datum = reader.read(datum, decoder);
-		} catch (IOException e) {
-			return null;
+		} 
+	    catch (EOFException eof)
+	    {
+	    	return event;
+	    }
+	    catch (Exception e) {
+			logger.error("Exception reading event: " + e.toString());
+			return event;
 		}
 		
 	    Object medium = datum.get("medium");
@@ -105,8 +110,10 @@ public class FlumeRFC1918Interceptor implements
 		}
 		
 		int removedEvents = 0;
+		int processedEvents = 0;
 		for (Iterator<Event> iterator = events.iterator(); iterator.hasNext(); ) {
             Event event =  intercept(iterator.next());
+            processedEvents++;
             if(event == null) {
                 // remove the event
                 iterator.remove();
@@ -116,7 +123,7 @@ public class FlumeRFC1918Interceptor implements
 		
 		if (removedEvents > 0)
 		{
-			logger.info("Dropped Events because of RFC1918 addresses: " + removedEvents + " out of " + events.size());
+			logger.info("Dropped Events because of RFC1918 addresses: " + removedEvents + " out of " + processedEvents);
 		}
 		
         return events;

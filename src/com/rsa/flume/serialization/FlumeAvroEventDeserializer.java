@@ -2,6 +2,7 @@ package com.rsa.flume.serialization;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -21,6 +22,7 @@ import org.apache.flume.conf.ComponentConfiguration;
 
 import org.apache.flume.sink.elasticsearch.ContentBuilderUtil;
 import org.apache.flume.sink.elasticsearch.ElasticSearchEventSerializer;
+
 // The above has been commented because of Flume errors
 //import com.frontier45.flume.sink.elasticsearch2.ContentBuilderUtil;
 //import com.frontier45.flume.sink.elasticsearch2.ElasticSearchEventSerializer;
@@ -107,7 +109,19 @@ public class FlumeAvroEventDeserializer  implements
 		DatumReader<GenericRecord> reader = new GenericDatumReader<>(schema);
 	    decoder = DecoderFactory.get().binaryDecoder(event.getBody(), decoder);
 	    GenericRecord datum = new GenericData.Record(schema);
-	    datum = reader.read(datum, decoder);
+	    
+	    try
+	    {
+	    	datum = reader.read(datum, decoder);
+	    }
+	    catch (EOFException eof)
+	    {
+	    	return;
+	    }
+	    catch (Exception e) {
+			logger.error("Exception reading event data: " + e.toString());
+			return;
+		}    
 	        
 	    // Reset the Coordinate fields
 	    latSrc = latDst = longSrc = longDst = null;
