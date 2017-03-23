@@ -2,13 +2,20 @@ package com.rsa.flume.serialization;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
+import java.io.BufferedWriter;
 import java.io.EOFException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 import java.util.TimeZone;
 
 import org.apache.avro.Schema;
+import org.apache.avro.file.DataFileReader;
+import org.apache.avro.file.FileReader;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
@@ -23,10 +30,8 @@ import org.apache.flume.conf.ComponentConfiguration;
 import org.apache.flume.sink.elasticsearch.ContentBuilderUtil;
 import org.apache.flume.sink.elasticsearch.ElasticSearchEventSerializer;
 
-// The above has been commented because of Flume errors
-//import com.frontier45.flume.sink.elasticsearch2.ContentBuilderUtil;
-//import com.frontier45.flume.sink.elasticsearch2.ElasticSearchEventSerializer;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.slf4j.Logger;
@@ -87,19 +92,24 @@ public class FlumeAvroEventDeserializer  implements
 	private String deviceType = null;
 	private Long time = 0L;
 	private Long eventTime = 0L;
-		
+	
+	private String schemaHash = null;
+	private Schema storedSchema;
+	private String decoderName; 
+	
 	@Override
 	  public XContentBuilder getContentBuilder(Event event) throws IOException {
 		config = Config.getinstance();
 	    XContentBuilder builder = jsonBuilder().startObject();
-	    appendFields(builder, event);   
+	    appendFields(builder, event);
+	    builder.endObject(); 
 	    return builder;
 	  }
 
 	  private void appendFields(XContentBuilder builder, Event event)
 	      throws IOException {
 		
-		schema = EventSchema.getinstance().getSchema(event);
+		schema = getSchema(event);
 		if (schema == null)
 		{
 			logger.error("Couldn't get a valid Schema. Abort processing of Event");
@@ -137,6 +147,15 @@ public class FlumeAvroEventDeserializer  implements
 	    	if (config.ExcludedFields().contains(field.name()))
 	    	{
 	    		continue;
+	    	}
+	    	
+	    	// Do we need to include the field?
+	    	if (!config.IncludedFields().contains(field.name()))
+	    	{
+	    		if (!decoderName.contains("log"))
+	    		{	
+	    			continue;
+	    		}
 	    	}
 	    	
 	    	Object value = datum.get(field.name());
@@ -184,7 +203,19 @@ public class FlumeAvroEventDeserializer  implements
 		    	{
 		    		fieldValue = fieldValue.substring(0, Math.min(fieldValue.length(), config.TruncateLength().get(field.name())));
 		    	}
-	    		   		
+	    		
+	    		if (value instanceof Boolean)
+	    		{
+	    			if (fieldValue == "T")
+	    			{
+	    				fieldValue = "true";
+	    			}
+	    			else if (fieldValue == "F")
+	    			{
+	    				fieldValue = "false";
+	    			}
+	    		}
+	    		
 	    		byte[] val = fieldValue.getBytes(charset);
 		    	ContentBuilderUtil.appendField(builder, field.name(), val);
 	    	}
@@ -193,12 +224,32 @@ public class FlumeAvroEventDeserializer  implements
 	    // Check if we got valid GEO IP Info
 	    if (latSrc != null && longSrc != null)
 	    {
-	    	builder.field("location_src", Lists.newArrayList(Double.parseDouble(longSrc), Double.parseDouble(latSrc)));	
+	    	if  (config.KibanaVersion() > 3)
+	    	{
+	    		builder.startObject("location_src");
+	    		builder.field("lat", Double.parseDouble(latSrc));
+	    		builder.field("lon", Double.parseDouble(longSrc));
+	    		builder.endObject();
+	    	}
+	    	else
+	    	{
+	    		builder.field("location_src", Lists.newArrayList(Double.parseDouble(longSrc), Double.parseDouble(latSrc)));	
+	    	}
 	    }
 	    
 	    if (latDst != null && longDst != null)
 	    {
-	    	builder.field("location_dst", Lists.newArrayList(Double.parseDouble(longDst), Double.parseDouble(latDst)));
+	    	if  (config.KibanaVersion() > 3)
+	    	{
+	    		builder.startObject("location_dst");
+	    		builder.field("lat", Double.parseDouble(latDst));
+	    		builder.field("lon", Double.parseDouble(longDst));
+	    		builder.endObject();
+	    	}
+	    	else
+	    	{
+	    		builder.field("location_dst", Lists.newArrayList(Double.parseDouble(longDst), Double.parseDouble(latDst)));
+	    	}
 	    }
 	    
         builder.endObject();   
@@ -230,7 +281,7 @@ public class FlumeAvroEventDeserializer  implements
     	builder.field("@timestamp", formattedDate);
    	
 	    // Set the Decoder Name as Source
-		ContentBuilderUtil.appendField(builder, "@source", EventSchema.getinstance().DecoderName().getBytes(charset));
+		ContentBuilderUtil.appendField(builder, "@source", decoderName.getBytes(charset));
 	  }
   
 	  @Override
@@ -241,5 +292,97 @@ public class FlumeAvroEventDeserializer  implements
 	  @Override
 	  public void configure(ComponentConfiguration conf) {
 	    // NO-OP...
+	  }
+	  
+	  /**
+	   * Gets the Schema information out of the Event.
+	   * If it is LITERAL, then parse the schema
+	   * If it is HASH, then compare if the hash changed and reread the schema from the file
+	   * 
+	   * @param event
+	   * @return
+	  */
+	  private Schema getSchema(Event event)
+	  {
+		  Schema schema = null;
+		  Map<String, String> headers = Maps.newHashMap(event.getHeaders());
+		  
+		  if (headers.containsKey("flume.avro.schema.literal"))
+		  {
+			  schema = new Schema.Parser().parse(headers.get("flume.avro.schema.literal"));
+		  }
+		  else if (headers.containsKey("flume.avro.schema.hash"))
+		  {
+			  String hash = headers.get("flume.avro.schema.hash");
+			  if (hash != schemaHash)
+			  {
+				  schemaHash = hash;
+				  schema = readSchemaString(headers.get("file"));
+				  // In rare cases it happens that Flume renames the file, while we were trying to get the schema
+				  // try to read the schema up to 10 times
+				  int count = 0;
+				  while (schema == null && count < 10)
+				  {
+					  try {
+						Thread.sleep(100);
+					  } catch (InterruptedException e) {
+							
+					  }
+					  schema = readSchemaString(headers.get("file"));
+					  count++;
+				  }
+				  
+				  storedSchema = schema;
+			  }
+			  else
+			  {
+				  schema = storedSchema;
+			  }
+		  }
+		  return schema;
+	  }
+	  
+	  private Schema readSchemaString(String file)
+	  {
+		  // See if file still exists or if it had been renamed already by Flume
+		  File f = new File(file);
+		  if (!f.exists())
+		  {
+			  file = file + ".COMPLETED";
+		  }
+		  
+	      // Get the name of the Decoder out of the filename
+		  // Sample file names:
+		  // sessions-warehouseconnector-eb-rng-aptdec1-es-34835-1425401857360-TS2015-3-3-14-23TE.avro
+		  // sessions-warehouseconnector-eb-gb-aptlog1-elasticsearch-1033-1424936607584-TS2015-2-26-6-43TE.avro
+		  // The decoder name would be: eb-rng-aptdec1 or eb-gb-aptlog1 
+		  decoderName = file.substring(file.indexOf("sessions-warehouseconnector-") + 28,file.lastIndexOf("-", file.lastIndexOf("-", file.lastIndexOf("-", file.lastIndexOf("-TS") - 1) - 1) - 1 ));
+		  
+		  logger.debug("Using file " + file);
+		  	  
+		  FileReader<?> fileReader = null;
+		  Schema schema = null;
+		  try
+		    {
+			  GenericDatumReader<?> reader = new GenericDatumReader<Object>();
+			  fileReader = DataFileReader.openReader(new File(file), reader);
+			  
+		      schema = fileReader.getSchema();
+		    } catch (IOException e) {
+		    	logger.error("IOException getting schema: " + e.getMessage());
+		    	return null;
+			} catch (NullPointerException e1) {
+				logger.error("NullPointer Exception getting schema: " + e1.getMessage());
+				return null;
+			} finally {
+		      try {
+				fileReader.close();
+		      } catch (IOException e) {
+		    	  return schema;
+		      } catch (NullPointerException e1) {
+					return schema;
+		      }
+		    }
+		  return schema;
 	  }
 }

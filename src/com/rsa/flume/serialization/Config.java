@@ -27,6 +27,7 @@ public final class Config {
 	private Boolean initialised = false;
 	private Boolean ignoreRFC1918 = false;
 	private String configFile = "/opt/flume/conf/FlumeAvroEventDeserializer.xml";
+	private int kibanaVersion = 3;
 
 	// HashMap with Time Correction Information for Device Types
 	private static HashMap<String, Object> timeCorrection = new HashMap<String, Object>();
@@ -36,6 +37,10 @@ public final class Config {
 	
 	// Fields, which shall not be sent to elasticSearch
 	private static List<String> excludedFields = new ArrayList<String>();
+
+	// Fields, which shall be sent to elasticSearch
+	private static List<String> includedFields = new ArrayList<String>();
+
 	
 	private Config()
 	{
@@ -73,6 +78,16 @@ public final class Config {
 	{
 		return excludedFields;
 	}
+
+	public List<String> IncludedFields()
+	{
+		return includedFields;
+	}
+
+	public int KibanaVersion()
+	{
+		return kibanaVersion;
+	}
 	
 	private void ReadConfig()
 	  {
@@ -96,6 +111,20 @@ public final class Config {
 						Element element = (Element) node;
 						String name = element.getAttribute("name");
 						excludedFields.add(name);
+					}
+				}
+
+				// Get the list of fields, which should be included
+				nodes = (NodeList)xPath.evaluate("/configuration/Include/Field",
+				        doc.getDocumentElement(), XPathConstants.NODESET);
+
+				for (int i = 0; i < nodes.getLength(); i++) 
+				{
+					Node node = nodes.item(i);
+					if (node.getNodeType() == Node.ELEMENT_NODE) {
+						Element element = (Element) node;
+						String name = element.getAttribute("name");
+						includedFields.add(name);
 					}
 				}
 				
@@ -138,6 +167,8 @@ public final class Config {
 					logger.info("Ignoring RFC 1918 addresses as per Configuration");
 					ignoreRFC1918 = true;
 				}
+				
+				kibanaVersion = Integer.parseInt(xPath.evaluate("/configuration/KibanaVersion/text()", doc.getDocumentElement())); 
 				
 				initialised = true;
 				
