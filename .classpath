@@ -2,18 +2,18 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/flume/flume-ng-core/target/flume-ng-core-1.6.0-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/flume/flume-ng-sdk/target/flume-ng-sdk-1.6.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/slf4j-api-1.6.1.jar"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/avro-1.7.3.jar"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/flume-ng-elasticsearch-sink-1.5.2.jar"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/flume-ng-configuration-1.5.2.jar"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/elasticsearch-1.4.1.jar"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/commons-lang-2.5.jar"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/lucene-core-4.10.2.jar"/>
+	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/avro-1.7.4.jar"/>
+	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/elasticsearch-5.0.1.jar"/>
+	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/jackson-mapper-asl-1.9.3.jar"/>
 	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/jackson-core-asl-1.9.3.jar"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/elasticsearch-sink2-1.0.jar"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/guava-18.0.jar"/>
+	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/flume/flume-ng-dist/target/apache-flume-1.8.0-SNAPSHOT-bin/apache-flume-1.8.0-SNAPSHOT-bin/lib/flume-ng-configuration-1.8.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/flume/flume-ng-dist/target/apache-flume-1.8.0-SNAPSHOT-bin/apache-flume-1.8.0-SNAPSHOT-bin/lib/flume-ng-elasticsearch-sink-1.8.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/flume/flume-ng-dist/target/apache-flume-1.8.0-SNAPSHOT-bin/apache-flume-1.8.0-SNAPSHOT-bin/lib/flume-ng-sdk-1.8.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/flume/flume-ng-dist/target/apache-flume-1.8.0-SNAPSHOT-bin/apache-flume-1.8.0-SNAPSHOT-bin/lib/flume-ng-core-1.8.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/guava-19.0.jar"/>
+	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/lucene-core-6.2.1.jar"/>
+	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/joda-time-2.9.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
