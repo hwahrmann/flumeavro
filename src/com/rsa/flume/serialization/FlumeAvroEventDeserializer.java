@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 import java.util.TimeZone;
@@ -77,6 +78,8 @@ import org.slf4j.LoggerFactory;
  * ---------------
  * 
  * 29.03.2016 1.1 Added a switch to suppress RFC 1918 IP Addresses 
+ * 22.03.2017 1.2 Added Kibana Version check, for geo_point creation
+ * 23.03.2017 1.3 Added the ability to include / exclude fields based on the decodername
  * 
  */
 public class FlumeAvroEventDeserializer  implements
@@ -140,24 +143,22 @@ public class FlumeAvroEventDeserializer  implements
 	    
 	    // Reset the Time fields
 	    time = eventTime = 0L;
-	    
+	
+	    decoderName = datum.get("ng_source").toString();
+	    if (decoderName == null)
+	    {
+	    	decoderName = getDecoderNameFromFile(event.getHeaders().get("file"));
+	    }
+	        
 	    builder.startObject("@fields");
 	    for (Schema.Field field : schema.getFields()) {
-	    	// Do we need to ignore the field?
-	    	if (config.ExcludedFields().contains(field.name()))
+	    	
+	    	// Shall we ignore the field, based on configuration settings
+	    	if (!includeOrExcludeField(field.name()))
 	    	{
 	    		continue;
 	    	}
-	    	
-	    	// Do we need to include the field?
-	    	if (!config.IncludedFields().contains(field.name()))
-	    	{
-	    		if (!decoderName.contains("log"))
-	    		{	
-	    			continue;
-	    		}
-	    	}
-	    	
+	    	    	
 	    	Object value = datum.get(field.name());
 	    	if (value != null)
 	    	{
@@ -284,15 +285,40 @@ public class FlumeAvroEventDeserializer  implements
 		ContentBuilderUtil.appendField(builder, "@source", decoderName.getBytes(charset));
 	  }
   
-	  @Override
-	  public void configure(Context context) {
-	    // NO-OP...
-	  }
 
-	  @Override
-	  public void configure(ComponentConfiguration conf) {
-	    // NO-OP...
+	  private boolean includeOrExcludeField(String field)
+	  {
+		// Do we need to ignore the field?
+		if (config.ExcludedFields(decoderName).contains(field))
+	    {
+			return false;
+	    }
+	    	
+	    // Do we need to include the field?
+	    if (config.IncludedFields(decoderName).contains(field) || config.IncludedFields(decoderName).contains("*"))
+	    {
+	    	return true;
+	    }
+	    return false;
 	  }
+	  
+	  /**
+	   * In case, we didn't get the decoder name from the "ng_source" field, we will
+	   * try to extract it from the filename.
+	   * 
+	   * @param file
+	   * @return
+	   */
+	  private String getDecoderNameFromFile(String file)
+	  {
+	      // Get the name of the Decoder out of the filename
+		  // Sample file names:
+		  // sessions-warehouseconnector-eb-rng-aptdec1-es-34835-1425401857360-TS2015-3-3-14-23TE.avro
+		  // sessions-warehouseconnector-eb-gb-aptlog1-elasticsearch-1033-1424936607584-TS2015-2-26-6-43TE.avro
+		  // The decoder name would be: eb-rng-aptdec1 or eb-gb-aptlog1 
+		  return file.substring(file.indexOf("sessions-warehouseconnector-") + 28,file.lastIndexOf("-", file.lastIndexOf("-", file.lastIndexOf("-", file.lastIndexOf("-TS") - 1) - 1) - 1 ));
+	  }
+	  
 	  
 	  /**
 	   * Gets the Schema information out of the Event.
@@ -350,14 +376,7 @@ public class FlumeAvroEventDeserializer  implements
 		  {
 			  file = file + ".COMPLETED";
 		  }
-		  
-	      // Get the name of the Decoder out of the filename
-		  // Sample file names:
-		  // sessions-warehouseconnector-eb-rng-aptdec1-es-34835-1425401857360-TS2015-3-3-14-23TE.avro
-		  // sessions-warehouseconnector-eb-gb-aptlog1-elasticsearch-1033-1424936607584-TS2015-2-26-6-43TE.avro
-		  // The decoder name would be: eb-rng-aptdec1 or eb-gb-aptlog1 
-		  decoderName = file.substring(file.indexOf("sessions-warehouseconnector-") + 28,file.lastIndexOf("-", file.lastIndexOf("-", file.lastIndexOf("-", file.lastIndexOf("-TS") - 1) - 1) - 1 ));
-		  
+		  	  
 		  logger.debug("Using file " + file);
 		  	  
 		  FileReader<?> fileReader = null;
@@ -384,5 +403,15 @@ public class FlumeAvroEventDeserializer  implements
 		      }
 		    }
 		  return schema;
+	  }
+	  
+	  @Override
+	  public void configure(Context context) {
+	    // NO-OP...
+	  }
+
+	  @Override
+	  public void configure(ComponentConfiguration conf) {
+	    // NO-OP...
 	  }
 }
