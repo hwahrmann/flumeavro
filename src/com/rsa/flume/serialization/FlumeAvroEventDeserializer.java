@@ -2,14 +2,10 @@ package com.rsa.flume.serialization;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
-import java.io.BufferedWriter;
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 import java.util.TimeZone;
@@ -80,6 +76,7 @@ import org.slf4j.LoggerFactory;
  * 29.03.2016 1.1 Added a switch to suppress RFC 1918 IP Addresses 
  * 22.03.2017 1.2 Added Kibana Version check, for geo_point creation
  * 23.03.2017 1.3 Added the ability to include / exclude fields based on the decodername
+ * 10.07.2017 1.4 Added check for correct Longitude. Latitude format
  * 
  */
 public class FlumeAvroEventDeserializer  implements
@@ -228,8 +225,8 @@ public class FlumeAvroEventDeserializer  implements
 	    	if  (config.KibanaVersion() > 3)
 	    	{
 	    		builder.startObject("location_src");
-	    		builder.field("lat", Double.parseDouble(latSrc));
-	    		builder.field("lon", Double.parseDouble(longSrc));
+	    		builder.field("lat", correctLatitude(Double.parseDouble(latSrc)));
+	    		builder.field("lon", correctLongitude(Double.parseDouble(longSrc)));
 	    		builder.endObject();
 	    	}
 	    	else
@@ -243,8 +240,8 @@ public class FlumeAvroEventDeserializer  implements
 	    	if  (config.KibanaVersion() > 3)
 	    	{
 	    		builder.startObject("location_dst");
-	    		builder.field("lat", Double.parseDouble(latDst));
-	    		builder.field("lon", Double.parseDouble(longDst));
+	    		builder.field("lat", correctLatitude(Double.parseDouble(latDst)));
+	    		builder.field("lon", correctLongitude(Double.parseDouble(longDst)));
 	    		builder.endObject();
 	    	}
 	    	else
@@ -285,7 +282,34 @@ public class FlumeAvroEventDeserializer  implements
 		ContentBuilderUtil.appendField(builder, "@source", decoderName.getBytes(charset));
 	  }
   
+	  /**
+	   *  The Longitude must be between -180..180
+	   *  Some systems deliver it as 0..360 
+	   *  Let's correct the value in those cases
+	   */
+	  private double correctLongitude(double longitude)
+	  {
+	  	if (Math.abs(longitude) <= 180)
+	  	{
+	  		return longitude;
+	  	}
+	  	return ((longitude + 180) % 360) - 180;
+	  }
 
+	  /**
+	   *  The Latitude must be between -90..90
+	   *  Some systems deliver it as 0..180 
+	   *  Let's correct the value in those cases
+	   */
+	  private double correctLatitude(double latitude)
+	  {
+	  	if (Math.abs(latitude) <= 90)
+	  	{
+	  		return latitude;
+	  	}
+	  	return ((latitude + 90) % 180) - 90;
+	  }
+	  
 	  private boolean includeOrExcludeField(String field)
 	  {
 		// Do we need to ignore the field?
