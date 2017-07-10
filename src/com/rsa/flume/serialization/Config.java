@@ -127,7 +127,7 @@ public final class Config {
 					
 					for (int k = 0; k < decoderNames.length; k++)
 					{
-						excludedFields.put(decoderNames[k], new ArrayList());
+						excludedFields.put(decoderNames[k], new ArrayList<String>());
 					}
 								
 					NodeList fieldNodes = node.getElementsByTagName("Field");
@@ -136,7 +136,7 @@ public final class Config {
 						for (int k = 0; k < decoderNames.length; k++)
 						{
 							Element childNode = (Element)fieldNodes.item(j);
-							ArrayList<String> fieldList = (ArrayList)excludedFields.get(decoderNames[k]);
+							ArrayList<String> fieldList = (ArrayList<String>)excludedFields.get(decoderNames[k]);
 							fieldList.add(childNode.getFirstChild().getNodeValue().toString());
 							excludedFields.put(decoderNames[k], fieldList);
 							System.out.println(childNode.getFirstChild().getNodeValue().toString());
