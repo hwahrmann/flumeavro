@@ -77,6 +77,7 @@ import org.slf4j.LoggerFactory;
  * 22.03.2017 1.2 Added Kibana Version check, for geo_point creation
  * 23.03.2017 1.3 Added the ability to include / exclude fields based on the decodername
  * 10.07.2017 1.4 Added check for correct Longitude. Latitude format
+ * 08.08.2017 1.5 Added Country Mapping between Netwitness and Kibana
  * 
  */
 public class FlumeAvroEventDeserializer  implements
@@ -195,6 +196,12 @@ public class FlumeAvroEventDeserializer  implements
 	    		}
 	    		
 	    		String fieldValue = value.toString();
+	    		
+	    		// Apply Country Mapping
+	    		if (field.name().startsWith("country_src") || field.name().startsWith("country_dst"))
+	    		{
+	    			fieldValue = getMappedCountry(fieldValue);  
+	    		}
 	    		
 	    		// Do we need a truncation to avoid problems with lengthy fields
 	    		if (config.TruncateLength().containsKey(field.name()))
@@ -324,6 +331,15 @@ public class FlumeAvroEventDeserializer  implements
 	    	return true;
 	    }
 	    return false;
+	  }
+	  
+	  private String getMappedCountry(String country)
+	  {
+		  if (config.CountryMap().containsKey(country))
+		  {
+			  return config.CountryMap().get(country);
+		  }
+		  return country;
 	  }
 	  
 	  /**

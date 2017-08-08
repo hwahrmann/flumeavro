@@ -1,6 +1,10 @@
 package com.rsa.flume.serialization;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +45,8 @@ public final class Config {
 	// Fields, which shall be sent to elasticSearch
 	private static HashMap<String, List<String>> includedFields = new HashMap<String, List<String>>();
 
+	// Used to store Country Mapping between Netwitness and Kibana
+	private static HashMap<String, String> countryMap = new HashMap<String, String>();
 	
 	private Config()
 	{
@@ -104,6 +110,11 @@ public final class Config {
 		return kibanaVersion;
 	}
 	
+	public HashMap<String, String> CountryMap()
+	{
+		return countryMap;
+	}
+	
 	private void ReadConfig()
 	  {
 		  try {
@@ -123,7 +134,6 @@ public final class Config {
 				{
 					Element node = (Element) nodes.item(i);
 					String[] decoderNames = node.getAttribute("Decoder").split(",");
-					System.out.println("Decoder: " + decoderNames );	
 					
 					for (int k = 0; k < decoderNames.length; k++)
 					{
@@ -139,7 +149,6 @@ public final class Config {
 							ArrayList<String> fieldList = (ArrayList<String>)excludedFields.get(decoderNames[k]);
 							fieldList.add(childNode.getFirstChild().getNodeValue().toString());
 							excludedFields.put(decoderNames[k], fieldList);
-							System.out.println(childNode.getFirstChild().getNodeValue().toString());
 						}
 					}
 				}
@@ -225,10 +234,54 @@ public final class Config {
 				
 				kibanaVersion = Integer.parseInt(xPath.evaluate("/configuration/KibanaVersion/text()", doc.getDocumentElement())); 
 				
+				ReadCountryMap();
+				
 				initialised = true;
 				
 			} catch (Exception ex) {
 				logger.error("Error reading Config: " + ex.getMessage());
 			}
 	  }
+	
+	private void ReadCountryMap()
+	{
+		String countryMapFile = "/opt/flume/conf/CountryMapping.csv";
+		BufferedReader br = null;
+		String line = "";
+		String cvsSplitBy = ";";
+		int i = 0;
+
+		try
+		{
+			br = new BufferedReader(new FileReader(countryMapFile));
+			logger.info("Reading Netwitness to Kibana Country Mapping file.");
+			while ((line = br.readLine()) != null)
+			{
+				i++;
+				String[] countries = line.split(cvsSplitBy);
+				countryMap.put(countries[0], countries[1]);
+			}
+		}
+		catch (FileNotFoundException e) {
+		} 
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		finally {
+			if (br != null) {
+				try 
+				{
+					br.close();
+					logger.info("Found " + i + " mapped countries.");
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 }
