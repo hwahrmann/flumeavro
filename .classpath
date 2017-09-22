@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/slf4j-api-1.6.1.jar"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/avro-1.7.4.jar"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/elasticsearch-5.0.1.jar"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/commons-lang-2.6.jar"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/jackson-mapper-asl-1.9.3.jar"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/jackson-core-asl-1.9.3.jar"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/flume/flume-ng-dist/target/apache-flume-1.8.0-SNAPSHOT-bin/apache-flume-1.8.0-SNAPSHOT-bin/lib/flume-ng-configuration-1.8.0-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/flume/flume-ng-dist/target/apache-flume-1.8.0-SNAPSHOT-bin/apache-flume-1.8.0-SNAPSHOT-bin/lib/flume-ng-elasticsearch-sink-1.8.0-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/flume/flume-ng-dist/target/apache-flume-1.8.0-SNAPSHOT-bin/apache-flume-1.8.0-SNAPSHOT-bin/lib/flume-ng-sdk-1.8.0-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/flume/flume-ng-dist/target/apache-flume-1.8.0-SNAPSHOT-bin/apache-flume-1.8.0-SNAPSHOT-bin/lib/flume-ng-core-1.8.0-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/guava-19.0.jar"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/lucene-core-6.2.1.jar"/>
-	<classpathentry kind="lib" path="D:/Documents/Eclipse/workspace/FlumeAvro/lib/joda-time-2.9.6.jar"/>
+	<classpathentry kind="lib" path="C:/Users/wahrmh/Documents/Eclipse/Workspace/FlumeAvro/lib/slf4j-api-1.6.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/wahrmh/Documents/Eclipse/Workspace/FlumeAvro/lib/avro-1.7.4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/wahrmh/Documents/Eclipse/Workspace/FlumeAvro/lib/flume-ng-configuration-1.9.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="C:/Users/wahrmh/Documents/Eclipse/Workspace/FlumeAvro/lib/jackson-mapper-asl-1.9.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/wahrmh/Documents/Eclipse/Workspace/FlumeAvro/lib/jackson-core-asl-1.9.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/wahrmh/Documents/Eclipse/Workspace/FlumeAvro/lib/guava-19.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/wahrmh/Documents/Eclipse/Workspace/FlumeAvro/lib/joda-time-2.9.6.jar"/>
+	<classpathentry kind="lib" path="C:/Users/wahrmh/Documents/Eclipse/Workspace/FlumeAvro/lib/elasticsearch-5.6.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/wahrmh/Documents/Eclipse/Workspace/FlumeAvro/lib/flume-ng-core-1.9.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="C:/Users/wahrmh/Documents/Eclipse/Workspace/FlumeAvro/lib/flume-ng-elasticsearch-sink-1.9.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="C:/Users/wahrmh/Documents/Eclipse/Workspace/FlumeAvro/lib/flume-ng-sdk-1.9.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="C:/Users/wahrmh/Documents/Eclipse/Workspace/FlumeAvro/lib/lucene-core-6.6.0.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
