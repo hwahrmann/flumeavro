@@ -34,6 +34,8 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Serialize SA Warehouse Connector Flume events into the same format LogStash uses</p>
  *
@@ -78,6 +80,7 @@ import org.slf4j.LoggerFactory;
  * 23.03.2017 1.3 Added the ability to include / exclude fields based on the decodername
  * 10.07.2017 1.4 Added check for correct Longitude. Latitude format
  * 08.08.2017 1.5 Added Country Mapping between Netwitness and Kibana
+ * 01.12.2017 1.6 If Severity contains numeric data, a new field called severity_num should be added
  * 
  */
 public class FlumeAvroEventDeserializer  implements
@@ -223,6 +226,12 @@ public class FlumeAvroEventDeserializer  implements
 	    		
 	    		byte[] val = fieldValue.getBytes(charset);
 		    	ContentBuilderUtil.appendField(builder, field.name(), val);
+		    	
+		    	// If the Severity field contains a numeric value it should also be written into severity_num
+		    	if (field.name().equals("severity") && StringUtils.isNumeric(fieldValue))
+		    	{
+		    		ContentBuilderUtil.appendField(builder, "severity_num", val);
+		    	}
 	    	}
 	    }
 	        

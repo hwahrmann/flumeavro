@@ -14,5 +14,6 @@
 	<classpathentry kind="lib" path="C:/Users/wahrmh/Documents/Eclipse/Workspace/FlumeAvro/lib/flume-ng-sdk-1.9.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="C:/Users/wahrmh/Documents/Eclipse/Workspace/FlumeAvro/lib/lucene-core-6.6.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="C:/Users/wahrmh/Documents/Eclipse/Workspace/FlumeAvro/lib/commons-lang-2.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
